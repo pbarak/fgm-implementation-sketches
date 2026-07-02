@@ -1,0 +1,3 @@
+grant codeBase "file:/home/pbarakos/sketches/remote-site-store/-" {
+    permission java.security.AllPermission;
+};
