@@ -9,14 +9,14 @@ public class WorldCupRecord implements StreamRecord {
     public WorldCupRecord() {
     }
 
-    public WorldCupRecord(Long timeStamp,
-                          Long clientID,
-                          Long objectID,
-                          Long size,
-                          Long method,
-                          Long status,
-                          Long type,
-                          Long server) {
+    public WorldCupRecord(long timeStamp,
+                          long clientID,
+                          long objectID,
+                          long size,
+                          short method,
+                          short status,
+                          short type,
+                          short server) {
 
         this.timeStamp = timeStamp;
         this.clientID = clientID;
@@ -30,88 +30,85 @@ public class WorldCupRecord implements StreamRecord {
     }
 
     @JsonProperty
-    private Long timeStamp;
+    private long timeStamp;
     @JsonProperty
-    private Long clientID;
+    private long clientID;
     @JsonProperty
-    private Long objectID;
+    private long objectID;
     @JsonProperty
-    private Long size;
+    private long size;
     @JsonProperty
-    private Long method;
+    private short method;
     @JsonProperty
-    private Long status;
+    private short status;
     @JsonProperty
-    private Long type;
+    private short type;
     @JsonProperty
-    private Long server;
+    private short server;
 
     @JsonIgnore
-    public Long getTimeStamp() {
-        if (this.timeStamp != null) {
+    public long getTimeStamp() {
             return this.timeStamp * 1000;
         }
-        return null;
-    }
 
     @JsonIgnore
-    public void setTimeStamp(Long timeStamp) {
+    public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 
-    public Long getClientID() {
+    public long getClientID() {
         return this.clientID;
     }
 
-    public void setClientID(Long clientID) {
+    public void setClientID(long clientID) {
         this.clientID = clientID;
     }
 
-    public Long getObjectID() {
+    public long getObjectID() {
         return this.objectID;
     }
 
-    public void setObjectID(Long objectID) {
+    public void setObjectID(long objectID) {
         this.objectID = objectID;
     }
 
-    public Long getSize() {
+    public long getSize() {
         return this.size;
     }
 
-    public void setSize(Long size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
-    public Long getMethod() {
+    public long getMethod() {
         return this.method;
     }
 
-    public void setMethod(Long method) {
+    public void setMethod(short method) {
         this.method = method;
     }
 
-    public Long getStatus() {
+    public long getStatus() {
         return this.status;
     }
 
-    public void setStatus(Long status) {
+    public void setStatus(short status) {
         this.status = status;
     }
 
-    public Long getType() {
+    public long getType() {
         return type;
     }
 
-    public void setType(Long type) {
+    public void setType(short type) {
         this.type = type;
     }
 
-    public Long getServer() {
+    public long getServer() {
         return this.server;
     }
 
-    public void setServer(Long server) {
+    public void setServer(short server) {
         this.server = server;
     }
 

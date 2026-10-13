@@ -55,7 +55,7 @@ public class WindowsStatisticsProcessor implements Processor<String, StatisticsM
             if (value.getMessageType().equals(StatisticsMessageType.StreamRecordForStatistics.toString())) { //here, except for the update of central local state, throughput should be calculated
                 this.customWindow.update(value.getRecord(), STATISTICS_FREQUENCY, (value.getRecord()).getTimeStamp());
 
-                String updateMessage = value.getTimeStamp().toString() +
+                String updateMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +
@@ -88,7 +88,7 @@ public class WindowsStatisticsProcessor implements Processor<String, StatisticsM
                 Arrays.sort(innerProductsArray);
                 Median median = new Median();
 
-                String driftLogMessage = value.getTimeStamp().toString() +
+                String driftLogMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +
@@ -100,7 +100,7 @@ public class WindowsStatisticsProcessor implements Processor<String, StatisticsM
                 logger.info("at the end of the round: {} the median value is: {}", value.getRound(),
                         median.evaluate(innerProductsArray));
             } else if (key.equals(baseConfiguration.getIncrementTopicKey())) {
-                String incrementMessage = value.getTimeStamp().toString() +
+                String incrementMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +
@@ -109,7 +109,7 @@ public class WindowsStatisticsProcessor implements Processor<String, StatisticsM
                         value.getMessageType();
                 logger.info(incrementMessage);
             } else if (key.equals(baseConfiguration.getPhiMessagesTopicKey())) {
-                String phiMessage = value.getTimeStamp().toString() +
+                String phiMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +

@@ -163,10 +163,10 @@ public class WCProducer {
                         Long clientID = Long.parseLong(tokens[1]);
                         Long objectID = Long.parseLong(tokens[2]);
                         Long size = Long.parseLong(tokens[3]);
-                        Long method = Long.parseLong(tokens[4]);
-                        Long status = Long.parseLong(tokens[5]);
-                        Long type = Long.parseLong(tokens[6]);
-                        Long server = Long.parseLong(tokens[7]);
+                        Short method = Short.parseShort(tokens[4]);
+                        Short status = Short.parseShort(tokens[5]);
+                        Short type = Short.parseShort(tokens[6]);
+                        Short server = Short.parseShort(tokens[7]);
 
                         WorldCupRecord wc = new WorldCupRecord(timestamp, clientID, objectID, size, method, status, type, server);
                         sendToTopic(wc);

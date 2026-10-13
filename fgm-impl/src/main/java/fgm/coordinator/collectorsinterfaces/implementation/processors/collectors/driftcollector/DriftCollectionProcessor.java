@@ -28,7 +28,7 @@ public class DriftCollectionProcessor implements Processor<String, DriftVectorMe
 
     private static final String CSV_SEPARATOR = ",";
     private static final String ACTOR = "coordinator";
-    private static final String NO_SIZE = "NULL";
+    private static final String NULL_MESSAGE_SIZE = "NULL";
 
     private CoordinatorStateStore<?> coordinatorStateStore;
     private NodeRMICollectionInterface remoteStoreCollection;
@@ -138,8 +138,6 @@ public class DriftCollectionProcessor implements Processor<String, DriftVectorMe
             GlobalStatistic<?> currentE = fgmCoordinatorState.getE();
             double currentTheta = fgmCoordinatorState.getTheta();
 
-            // RMI payload for startNewRound / initializeFirstRound = E + one double.
-            long rmiPayloadBytes = SerializationUtil.bytesOf(currentE) + Double.BYTES;
 
             java.util.List<NodeRMIInterface<?>> allNodes = remoteStoreCollection.getAll();
 
@@ -147,7 +145,7 @@ public class DriftCollectionProcessor implements Processor<String, DriftVectorMe
                 final NodeRMIInterface<?> stateMessageBean = allNodes.get(i);
 
                 // Per-target dispatch log with measured payload size.
-                logSentEstimate(rmiPayloadBytes);
+                logSentEstimate();
 
                 RMINetworkDispatcher.dispatch(stateMessageBean, () -> {
                     try {
@@ -201,24 +199,23 @@ public class DriftCollectionProcessor implements Processor<String, DriftVectorMe
                 + DateTime.now().getMillis() + CSV_SEPARATOR
                 + CoordinatorMetrics.ROUND
                 + CSV_SEPARATOR
-                + NO_SIZE);
+                + NULL_MESSAGE_SIZE);
     }
 
-    private void logSentEstimate(long sizeBytes) {
+    private void logSentEstimate() {
         trace.info(ACTOR + CSV_SEPARATOR
                 + DateTime.now().getMillis() + CSV_SEPARATOR
                 + CoordinatorMetrics.SENT_ESTIMATE
                 + CSV_SEPARATOR
-                + sizeBytes);
+                + NULL_MESSAGE_SIZE);
     }
 
     private void logReceivedDrift(DriftVectorMessage msg) {
-        long bytes = SerializationUtil.bytesOf(msg);
         trace.info(ACTOR + CSV_SEPARATOR
                 + DateTime.now().getMillis() + CSV_SEPARATOR
                 + CoordinatorMetrics.RECEIVED_DRIFT
                 + CSV_SEPARATOR
-                + bytes);
+                + NULL_MESSAGE_SIZE);
     }
 
     @Override

@@ -12,6 +12,7 @@
         <module name="data-population" />
         <module name="fgm-impl" />
         <module name="fgm-utils" />
+        <module name="window-validation" />
         <module name="fgm-custom-window" />
         <module name="fgm-statistics" />
       </profile>

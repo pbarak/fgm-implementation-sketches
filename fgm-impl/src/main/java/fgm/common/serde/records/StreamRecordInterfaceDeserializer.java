@@ -35,10 +35,10 @@ public class StreamRecordInterfaceDeserializer
         wc.setClientID(node.path("client_i_d").asLong());
         wc.setObjectID(node.path("object_i_d").asLong());
         wc.setSize(node.path("size").asLong());
-        wc.setMethod(node.path("method").asLong());
-        wc.setStatus(node.path("status").asLong());
-        wc.setType(node.path("type").asLong());
-        wc.setServer(node.path("server").asLong());
+        wc.setMethod(node.path("method").shortValue());
+        wc.setStatus(node.path("status").shortValue());
+        wc.setType(node.path("type").shortValue());
+        wc.setServer(node.path("server").shortValue());
         return wc;
     }
 }

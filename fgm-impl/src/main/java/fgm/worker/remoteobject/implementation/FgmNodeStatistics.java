@@ -34,9 +34,7 @@ public class FgmNodeStatistics<T extends Vector> {
     private String nodeId;
     private final IMessageProducer<String, DriftVectorMessage> driftMessagesProducer;
     private final IMessageProducer<String, PhiMessage> phiMessagesProducer;
-    private final Producer<String, IncrementMessage> incrementMessagesProducer;
     private final IMessageProducer<String, StatisticsMessage> statisticsMessageProducer;
-    private final IMessageProducer<String, String> logsProducer;
     private int currentRound;
     private int currentSubRound;
     private final Window<T> window;
@@ -67,9 +65,8 @@ public class FgmNodeStatistics<T extends Vector> {
         this.currentSubRound = 0;
         this.driftMessagesProducer = factory.getDriftMessageProducer();
         this.phiMessagesProducer = factory.getPhiMessageProducer();
-        this.incrementMessagesProducer = factory.getIncrementMessageProducer();
         this.statisticsMessageProducer = factory.getStatisticsMessageProducer();
-        this.logsProducer = factory.getLogsProducer();
+
     }
 
     public Window<T> getWindow() {
@@ -170,16 +167,8 @@ public class FgmNodeStatistics<T extends Vector> {
         return this.phiMessagesProducer;
     }
 
-    public Producer<String, IncrementMessage> getIncrementProducer() {
-        return this.incrementMessagesProducer;
-    }
-
     public IMessageProducer<String, StatisticsMessage> getStatisticsMessageProducer() {
         return this.statisticsMessageProducer;
-    }
-
-    public IMessageProducer<String, String> getLogsProducer() {
-        return this.logsProducer;
     }
 
     public BaseConfiguration getBaseConfiguration() {
@@ -205,7 +194,7 @@ public class FgmNodeStatistics<T extends Vector> {
         this.lastTimeStampPunctuation = lastTimeStampPunctuation;
     }
 
-    boolean tryMarkFirstDriftSent() {
+    public boolean tryMarkFirstDriftSent() {
         return firstDriftSent.compareAndSet(false, true);
     }
 

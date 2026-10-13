@@ -9,7 +9,7 @@ public class StatisticsMessage implements Serializable {
     private Integer round;
     private Integer subround;
     private Long streamRecordNum;
-    private Long timeStamp; //wall clock time for logging and throughput statistics
+    private long timeStamp; //wall clock time for logging and throughput statistics
     private String siteID;
     private String messageType;
     private StreamRecord streamRecord;
@@ -72,11 +72,11 @@ public class StatisticsMessage implements Serializable {
         this.streamRecordNum = streamRecordNum;
     }
 
-    public Long getTimeStamp() {
+    public long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Long timeStamp) {
+    public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 

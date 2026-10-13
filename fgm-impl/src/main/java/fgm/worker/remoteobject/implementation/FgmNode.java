@@ -77,7 +77,6 @@ public class FgmNode<IMPL extends Vector> extends UnicastRemoteObject implements
                     topic,
                     this.nodeInternalFgmState.getNodeId(),
                     logMessage);
-            getLogsProducer().send(record);
             logger.info(logMessage);
         } catch (Exception e) {
             logger.warn("Log dropped to protect critical path: {}", e.getMessage());
@@ -158,12 +157,13 @@ public void warmUpSlideFlush(long eventTimeMs) {
 }
 
 
-    public void update(StreamRecord streamRecord, double frequency, Long timestamp) {
+    public void update(StreamRecord streamRecord, double frequency, long timestamp) {
         fairLock.lock();
         try {
             if (streamRecord != null) {
                 ////sendUpdateLogToTopic(WorkerMetrics.UPDATE, baseConfiguration.getWorkerLogsUpdatesTopic(), null);
                 String logMessage = System.currentTimeMillis() + CSV_SEPARATOR +
+                        streamRecord.getTimeStamp() + CSV_SEPARATOR +
                         this.nodeInternalFgmState.getNodeId()  + CSV_SEPARATOR +
                         WorkerMetrics.UPDATE + CSV_SEPARATOR + "NULL";
                 UPDATES.info(logMessage);
@@ -181,13 +181,10 @@ public void warmUpSlideFlush(long eventTimeMs) {
 
     @Override
     public void startNewRound(GlobalStatistic<IMPL> globalEstimate, double theta) throws RemoteException {
+        long payloadBytes = SerializationUtil.bytesOf(globalEstimate) + Double.BYTES; // thread-local arg, no lock needed
         fairLock.lock();
         try {
-	    long messageSize0 = SerializationUtil.bytesOf(globalEstimate);
-            int messageSize1 = Double.BYTES;
-	    long totalSize = messageSize0 + messageSize1;
-            String totalMessageSize = Long.toString(totalSize);
-            sendSafeLog(WorkerMetrics.RECEIVED_ESTIMATE_AND_QUANTUM, baseConfiguration.getWorkerLogTopic(), totalMessageSize);
+            sendSafeLog(WorkerMetrics.RECEIVED_ESTIMATE_AND_QUANTUM, baseConfiguration.getWorkerLogTopic(), Long.toString(payloadBytes));
             executeCommand(new StartNewRoundCommand(theta, globalEstimate, this));
         } finally {
             fairLock.unlock();
@@ -211,24 +208,28 @@ public void warmUpSlideFlush(long eventTimeMs) {
 
     @Override
     public void subroundEnded() throws RemoteException {
+        final SendPhiMessageCommand cmd = new SendPhiMessageCommand(this);
         fairLock.lock();
         try {
             sendSafeLog(WorkerMetrics.RECEIVED_REQ_PHI_MESSAGE, baseConfiguration.getWorkerLogTopic(), null);
-            executeCommand(new SendPhiMessageCommand(this));
+            cmd.snapshotUnderLock();
         } finally {
             fairLock.unlock();
         }
+        executeCommand(cmd);   // send + SENT_PHI log, off the lock
     }
 
     @Override
     public void roundEnded() throws RemoteException {
+        final SendDriftMessageCommand sendDriftMessageCommand = new SendDriftMessageCommand(this);
         fairLock.lock();
         try {
             sendSafeLog(WorkerMetrics.RECEIVED_REQ_DRIFT, baseConfiguration.getWorkerLogTopic(), null);
-            executeCommand(new SendDriftMessageCommand(this));
+            sendDriftMessageCommand.snapshotUnderLock();
         } finally {
             fairLock.unlock();
         }
+        executeCommand(sendDriftMessageCommand);
     }
 
     public void sendFirstDriftMessage() {
@@ -386,7 +387,5 @@ public void logSentDrift(long payloadBytes) {
 
     // Direct access to producers (StateStore handles their internal safety)
     public IMessageProducer<String, DriftVectorMessage> getDriftMessagesProducer() { return this.nodeInternalFgmState.getDriftMessagesProducer(); }
-    public IMessageProducer<String, PhiMessage> getPhiMessagesProducer() { return this.nodeInternalFgmState.getPhiMessagesProducer(); }
-    public IMessageProducer<String, String> getLogsProducer() { return this.nodeInternalFgmState.getLogsProducer(); }
     public FgmNodeStatistics<IMPL> getNodeInternalFgmState() { return this.nodeInternalFgmState; }
 }

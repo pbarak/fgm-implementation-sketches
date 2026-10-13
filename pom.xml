@@ -18,6 +18,7 @@
     <module>fgm-site-core</module>
     <module>fgm-statistics</module>
     <module>data-population</module>
+    <module>window-validation</module>
 
     <module>custom-window-operator</module>
 

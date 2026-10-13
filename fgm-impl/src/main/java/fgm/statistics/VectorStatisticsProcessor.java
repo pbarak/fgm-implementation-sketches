@@ -43,7 +43,7 @@ public class VectorStatisticsProcessor implements Processor<String, StatisticsMe
             if (key.equals(baseConfiguration.getStateUpdateStatisticsKey())) { //here, except for the update of central local state, throughput should be calculated
                 this.localStatistic.update(value.getRecord(), UNIT_FREQUENCY);
 
-                String updateMessage = value.getTimeStamp().toString() +
+                String updateMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +
@@ -57,7 +57,7 @@ public class VectorStatisticsProcessor implements Processor<String, StatisticsMe
                 statistic =  (this.localStatistic.getVector()).deepCopy();
                 statistic.scale(((double) this.baseConfiguration.getNumberOfNodes()));
 
-                String driftLogMessage = value.getTimeStamp().toString() +
+                String driftLogMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +
@@ -70,7 +70,7 @@ public class VectorStatisticsProcessor implements Processor<String, StatisticsMe
                 logger.info("at the end of the round: {} the query function value is: {}", value.getRound(),
                         this.queryFunction.computeQuery(statistic));
             } else if (key.equals(baseConfiguration.getIncrementTopicKey())) {
-                String incrementMessage = value.getTimeStamp().toString() +
+                String incrementMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +
@@ -79,7 +79,7 @@ public class VectorStatisticsProcessor implements Processor<String, StatisticsMe
                         value.getMessageType();
                 logger.info(incrementMessage);
             } else if (key.equals(baseConfiguration.getPhiMessagesTopicKey())) {
-                String phiMessage = value.getTimeStamp().toString() +
+                String phiMessage = value.getTimeStamp() +
                         SEPARATOR +
                         System.currentTimeMillis() +
                         SEPARATOR +

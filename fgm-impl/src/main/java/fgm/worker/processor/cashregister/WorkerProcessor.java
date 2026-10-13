@@ -86,7 +86,7 @@ public class WorkerProcessor implements Processor<StreamRecord, Double> {
                     System.out.println("sleep");
                     Thread.sleep(1000);
                 } else {
-                    fgmNode.update(streamRecord, frequency, null);
+                    fgmNode.update(streamRecord, frequency, streamRecord.getTimeStamp());
                     sendUpdateLogMessage();
 
                     sendStateUpdateStatistics(streamRecord);

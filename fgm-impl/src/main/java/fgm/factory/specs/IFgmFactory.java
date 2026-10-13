@@ -39,11 +39,7 @@ public interface IFgmFactory<IMPL extends Vector> {
 
     IMessageProducer<String, PhiMessage> getPhiMessageProducer();
 
-    Producer<String, IncrementMessage> getIncrementMessageProducer();
-
     IMessageProducer<String, StatisticsMessage> getStatisticsMessageProducer();
-
-    IMessageProducer<String, String> getLogsProducer();
 
     BaseConfiguration getBaseCfg();
 

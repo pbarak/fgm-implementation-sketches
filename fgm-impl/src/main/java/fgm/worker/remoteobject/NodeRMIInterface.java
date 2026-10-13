@@ -20,7 +20,7 @@ public interface NodeRMIInterface<T extends Vector> extends Remote {
 
     void roundEnded() throws RemoteException;
 
-    void update(StreamRecord streamRecord, double frequency, Long timestamp) throws RemoteException;
+    ///void update(StreamRecord streamRecord, double frequency, long timestamp) throws RemoteException;
 	
     boolean ping() throws RemoteException;
 

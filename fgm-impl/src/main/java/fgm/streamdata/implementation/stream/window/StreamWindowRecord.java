@@ -85,7 +85,7 @@ public class StreamWindowRecord implements StreamRecord {
 
     /** {@inheritDoc} Allocates a {@code Long} per call. Prefer {@link #getMillisecondsTimestamp()}. */
     @Override
-    public Long getTimeStamp() {
+    public long getTimeStamp() {
         return millisecondsPreciseTimestamp;
     }
 

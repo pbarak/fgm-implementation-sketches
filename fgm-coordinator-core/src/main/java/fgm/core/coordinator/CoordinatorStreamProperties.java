@@ -1,6 +1,7 @@
 package fgm.core.coordinator;
 
 import fgm.common.cfg.BaseConfiguration;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.streams.StreamsConfig;
@@ -60,6 +61,14 @@ public final class CoordinatorStreamProperties {
 
         props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 30000);
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
+
+
+
+        props.put(StreamsConfig.adminClientPrefix("default.api.timeout.ms"), "180000");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG), "60000");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.RETRY_BACKOFF_MS_CONFIG), "500");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.RECONNECT_BACKOFF_MS_CONFIG), "1000");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG), "30000");
 
         return props;
     }

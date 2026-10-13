@@ -19,21 +19,47 @@ public class SendDriftMessageCommand implements FgmCommand {
     private String siteId;
     private FgmNode<?> fgmNode;
     private long lastSentBytes;     // payload size of the most recent send, for logging
+
+    private DriftVectorMessage driftMessage;
+    private StatisticsMessage statisticsMessage;
+
     private static final Logger logger = LoggerFactory.getLogger(SendDriftMessageCommand.class);
-    private static final String CSV_SEPARATOR = ",";
 
     public SendDriftMessageCommand() {
     }
 
     public SendDriftMessageCommand(FgmNode<?> fgmNode) {
         this.fgmNode = fgmNode;
-        this.siteId = this.fgmNode.getNodeId();
     }
+
+    /**
+     * Phase 1 — MUST be invoked while holding the node's fairLock.
+     * Reads all protocol state exactly once and builds both outbound
+     * messages. getDrift() returns an independent copy of Si - Ei
+     * (FastAGMS.subtract allocates a fresh sketch and setCounts deep-copies),
+     * so after this method returns the messages share no state with the
+     * live sketches.
+     */
+    public void snapshotUnderLock() {
+        String siteId = this.fgmNode.getNodeId();
+        int currentRound = this.fgmNode.getCurrentRound();
+        int currentSubround = this.fgmNode.getCurrentSubRound();
+
+        driftMessage = DriftVectorMessage.getInstance();
+        driftMessage.setSiteId(siteId);
+        driftMessage.setStateVector(this.fgmNode.getDrift().getVector());
+        driftMessage.setCurrentRound(currentRound);
+        driftMessage.setCurrentSubround(currentSubround);
+
+        statisticsMessage = StatisticsMessage.getInstance(
+                currentRound, currentSubround, siteId,
+                StatisticsMessageType.DriftMessage.toString());
+    }
+
 
     @Override
     public void execute() {
         try {
-            getStatisticsProducer().flush();
 
             sendDrift();
 
@@ -47,22 +73,15 @@ public class SendDriftMessageCommand implements FgmCommand {
     }
 
     private void sendDrift() {
-        DriftVectorMessage stateMessage = DriftVectorMessage.getInstance();
-        stateMessage.setSiteId(this.siteId);
-        stateMessage.setStateVector(this.fgmNode.getDrift().getVector());
-        stateMessage.setCurrentRound(this.fgmNode.getCurrentRound());
-        stateMessage.setCurrentSubround(this.fgmNode.getCurrentSubRound());
+            // Measure the payload before sending so the size goes into the
+            // communication-cost log with the SENT_DRIFT event below.
+            this.lastSentBytes = SerializationUtil.bytesOf(driftMessage);
 
+            String driftMessageTopic = getBaseConfiguration().getDriftMessagesTopic();
+            String driftMessageKey = getBaseConfiguration().getDriftMessagesTopicKey();
+            ProducerRecord<String, DriftVectorMessage> producerRecord = new ProducerRecord<>(driftMessageTopic, driftMessageKey, driftMessage);
+            getDriftMessageProducer().send(producerRecord);
 
-        // Measure the payload before sending so the size goes into the
-        // communication-cost log with the SENT_DRIFT event below.
-        this.lastSentBytes = SerializationUtil.bytesOf(stateMessage);
-
-
-        String driftMessageTopic = getBaseConfiguration().getDriftMessagesTopic();
-        String driftMessageKey = getBaseConfiguration().getDriftMessagesTopicKey();
-        ProducerRecord<String, DriftVectorMessage> producerRecord = new ProducerRecord<>(driftMessageTopic, driftMessageKey, stateMessage);
-        getDriftMessageProducer().send(producerRecord);
     }
 
     private IMessageProducer<String, DriftVectorMessage> getDriftMessageProducer() {
@@ -72,10 +91,6 @@ public class SendDriftMessageCommand implements FgmCommand {
     private void sendStatisticsMessage() {
         String statisticsTopic = getBaseConfiguration().getStatisticEventsTopic();
         String statisticsKey = getBaseConfiguration().getStateUpdateStatisticsKey();
-        Integer currentRound = this.fgmNode.getCurrentRound();
-        Integer currentSubround = this.fgmNode.getCurrentSubRound();
-        String nodeId = this.fgmNode.getNodeId();
-        StatisticsMessage statisticsMessage = StatisticsMessage.getInstance(currentRound, currentSubround, nodeId, StatisticsMessageType.DriftMessage.toString());
         ProducerRecord<String, StatisticsMessage> statisticsRecord = new ProducerRecord<>(statisticsTopic, statisticsKey, statisticsMessage);
         getStatisticsProducer().send(statisticsRecord);
     }
@@ -92,10 +107,6 @@ public class SendDriftMessageCommand implements FgmCommand {
 
     private BaseConfiguration getBaseConfiguration() {
         return this.fgmNode.getNodeInternalFgmState().getBaseConfiguration();
-    }
-
-    private IMessageProducer<String, String> getLogsProducer() {
-        return this.fgmNode.getNodeInternalFgmState().getLogsProducer();
     }
 }
 

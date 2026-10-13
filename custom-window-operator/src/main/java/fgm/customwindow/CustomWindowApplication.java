@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 public class CustomWindowApplication extends CustomWindowAppBase {
 
     private static final String SINK_NAME = "output-sink";
+    private static final String STREAMS_SHUTDOWN_HOOK = "streams-shutdown-hook";
     private static final CountDownLatch latch = new CountDownLatch(1);
     static CfgRetrieval cfgRetrieval = new CfgRetrieval();
 
@@ -22,7 +23,7 @@ public class CustomWindowApplication extends CustomWindowAppBase {
 
         String inputTopic = args[0];
         String vectorSourceNodeName = args[1];
-        String siteProcessorName = args[2];
+        String processorName = args[2];
         String nodeId = args[3];
         String outputTopic = args[4];
 
@@ -35,10 +36,10 @@ public class CustomWindowApplication extends CustomWindowAppBase {
                         streamRecordSerde.deserializer(),       //    key deserializer
                         doubleSerde.deserializer(),             //    value deserializer
                         inputTopic)
-                .addProcessor(siteProcessorName,
+                .addProcessor(processorName,
                         WCProcessor::new,
                         vectorSourceNodeName)
-                .addSink(SINK_NAME, outputTopic, windowedLongSerde.serializer(), aggregateResultSerde.serializer(), siteProcessorName);
+                .addSink(SINK_NAME, outputTopic, windowedLongSerde.serializer(), aggregateResultSerde.serializer(), processorName);
 
         Properties props = new Properties();
         props.put(StreamsConfig.CLIENT_ID_CONFIG, nodeId);
@@ -77,7 +78,7 @@ public class CustomWindowApplication extends CustomWindowAppBase {
         KafkaStreams kafkaStreams = new KafkaStreams(topology, props);
 
 // attach shutdown handler to catch control-c
-        Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+        Runtime.getRuntime().addShutdownHook(new Thread(STREAMS_SHUTDOWN_HOOK) {
             @Override
             public void run() {
                 kafkaStreams.close();

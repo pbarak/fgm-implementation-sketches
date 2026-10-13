@@ -23,6 +23,7 @@ public class IncrementCollectionProcessor implements Processor<String, Increment
     private static final String CSV_SEPARATOR = ",";
     private static final String ACTOR = "coordinator";
 
+    private static final String NULL_MESSAGE_SIZE = "NULL";
     private ProcessorContext processorContext;
     private final String stateStoreName;
     private NodeRMICollectionInterface remoteNodeStore;
@@ -67,13 +68,11 @@ public class IncrementCollectionProcessor implements Processor<String, Increment
     public void notifyNodesForSubroundEnded() {
         try {
             java.util.List<NodeRMIInterface<?>> allNodes = remoteNodeStore.getAll();
-            // subroundEnded(): no arguments, 0 bytes.
-            final long rmiPayloadBytes = 0L;
 
             for (int i = 0; i < allNodes.size(); i++) {
                 final NodeRMIInterface<?> node = allNodes.get(i);
 
-                logSentRequestPhiMessage(rmiPayloadBytes);
+                logSentRequestPhiMessage();
 
                 RMINetworkDispatcher.dispatch(node, () -> {
                     try {
@@ -91,12 +90,11 @@ public class IncrementCollectionProcessor implements Processor<String, Increment
     public void collectIncrements(IncrementMessage incrementMessage) {
         logIncrementReceivedInformation(incrementMessage);
         // Inbound communication event: measure and log per-message.
-        logIncrementReceived(incrementMessage);
+        logIncrementReceived();
         collectMsgAndNotifyNodes(incrementMessage);
     }
 
     void collectMsgAndNotifyNodes(IncrementMessage incrementMessage) {
-        synchronized (RMINetworkDispatcher.GLOBAL_PHASE_LOCK) {
             if (incrementMessage.getCurrentRound() == fgmCoordinatorState.getCurrentRound()
                     && incrementMessage.getCurrentSubround() == fgmCoordinatorState.getCurrentSubround()) {
 
@@ -108,27 +106,25 @@ public class IncrementCollectionProcessor implements Processor<String, Increment
                     notifyNodesForSubroundEnded();
                 }
             }
-        }
     }
 
     // ----- communication-cost log lines -----
     // Shape: actor,timestamp,event,target,sizeBytes
 
-    private void logIncrementReceived(IncrementMessage inc) {
-        long bytes = SerializationUtil.bytesOf(inc);
+    private void logIncrementReceived() {
         trace.info(ACTOR + CSV_SEPARATOR
                 + DateTime.now().getMillis() + CSV_SEPARATOR
                 + CoordinatorMetrics.RECEIVED_INCREMENT 
-		+ CSV_SEPARATOR
-                + bytes);
+		        + CSV_SEPARATOR
+                + NULL_MESSAGE_SIZE);
     }
 
-    private void logSentRequestPhiMessage(long sizeBytes) {
+    private void logSentRequestPhiMessage() {
         trace.info(ACTOR + CSV_SEPARATOR
                 + DateTime.now().getMillis() + CSV_SEPARATOR
                 + CoordinatorMetrics.SENT_REQ_PHI_MESSAGE
                 + CSV_SEPARATOR
-                + sizeBytes);
+                + NULL_MESSAGE_SIZE);
     }
 
     @Override

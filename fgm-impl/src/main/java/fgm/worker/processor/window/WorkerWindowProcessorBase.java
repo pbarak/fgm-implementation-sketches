@@ -124,6 +124,7 @@ void warmUpStateVector(StreamRecord streamRecord, Double frequency) {
                                 LocalWatermarks.remove(processorContext.taskId());
                             }
                         } else {
+			                fgmNode.getNodeInternalFgmState().getSi().update(streamRecord, frequency);
                             fgmNode.sendFirstDriftMessage();
                         }
                         sentFirstDriftMessage = true;

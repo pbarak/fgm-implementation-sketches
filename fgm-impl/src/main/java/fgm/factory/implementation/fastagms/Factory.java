@@ -140,14 +140,6 @@ public class Factory implements IFgmFactory<FastAGMS> {
         return new KafkaMessageProducer<>(createPhiMessagesProducer());
     }
 
-    public Producer<String, IncrementMessage> getIncrementMessageProducer() {
-        return createIncrementMessagesProducer();
-    }
-
-    public IMessageProducer<String, String> getLogsProducer() {
-        return new KafkaMessageProducer<>(createLogsProducer());
-    }
-
     public JsonDeserializer<StreamRecord> getRecordDeserializer() {
         return new StreamRecordInterfaceDeserializer();
     }
@@ -203,7 +195,7 @@ public class Factory implements IFgmFactory<FastAGMS> {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StatisticsMessageSerializer.class.getName());
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 20);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 4 * 1024 * 1024);
 
         properties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
         properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 120000);
@@ -223,7 +215,7 @@ public class Factory implements IFgmFactory<FastAGMS> {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, DriftVectorMessageSerializer.class.getName());
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 20);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 4 * 1024 * 1024);
 
         properties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
         properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 120000);
@@ -239,39 +231,7 @@ public class Factory implements IFgmFactory<FastAGMS> {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerializer.class.getName());
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 20);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
-
-        properties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
-        properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 120000);
-        properties.put(ProducerConfig.RETRIES_CONFIG, 10);
-
-        return new KafkaProducer<>(properties);
-    }
-
-    private Producer<String, IncrementMessage> createIncrementMessagesProducer() {
-        Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, getBaseCfg().getBootstrapServers());
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonPOJOSerializer.class.getName());
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, 20);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
-
-        properties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
-        properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 120000);
-        properties.put(ProducerConfig.RETRIES_CONFIG, 10);
-
-        return new KafkaProducer<>(properties);
-    }
-
-    private Producer<String, String> createLogsProducer() {
-        Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, getBaseCfg().getBootstrapServers());
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, 20);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 4 * 1024 * 1024);
 
         properties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
         properties.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 120000);

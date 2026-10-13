@@ -76,6 +76,13 @@ public final class SiteStreamProperties {
         // Consumer request timeout MUST be greater than session timeout in Kafka 2.x
         props.put(StreamsConfig.consumerPrefix(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG), "120000");
 
+        props.put(StreamsConfig.adminClientPrefix("default.api.timeout.ms"), "180000");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG), "60000");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.RETRY_BACKOFF_MS_CONFIG), "500");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.RECONNECT_BACKOFF_MS_CONFIG), "1000");
+        props.put(StreamsConfig.adminClientPrefix(AdminClientConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG), "30000");
+
+
         return props;
     }
 

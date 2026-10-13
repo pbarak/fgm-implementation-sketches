@@ -115,10 +115,6 @@ public class HashMapFactory implements IFgmFactory<HashMapState> {
         return new KafkaMessageProducer<>(createPhiMessagesProducer());
     }
 
-    public Producer<String, IncrementMessage> getIncrementMessageProducer() {
-        return createIncrementMessagesProducer();
-    }
-
     @Override
     public BaseConfiguration getBaseCfg() {
         return new BaseCfgImpl();
@@ -130,10 +126,6 @@ public class HashMapFactory implements IFgmFactory<HashMapState> {
 
     public JsonDeserializer<StatisticsMessage> getStatisticsMessageDeserializer() {
         return new StatisticsContentDeserializer();
-    }
-
-    public IMessageProducer<String, String> getLogsProducer() {
-        return new KafkaMessageProducer<>(createLogsProducer());
     }
 
     public Class<?> getTimestampExtractor(){

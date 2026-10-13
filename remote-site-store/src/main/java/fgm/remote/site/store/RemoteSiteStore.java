@@ -15,12 +15,27 @@ public class RemoteSiteStore implements NodeRMICollectionInterface {
 
     // The mutable list of currently-registered nodes (callers from add/remove)
     private static final List<NodeRMIInterface<?>> remoteObjects = new ArrayList<>();
-
     // A cached snapshot returned to callers never blocks on RMI.
     private static volatile List<NodeRMIInterface<?>> liveSnapshot = Collections.emptyList();
-
     private static final NodeRMICollectionInterface remoteNodeStore = new RemoteSiteStore();
     private static final FilePropertiesLocalStore filePropertiesLocalStore = FilePropertiesLocalStore.getInstance();
+
+    private static final String TRANSPORT_RESPONSE_TIMEOUT = "sun.rmi.transport.tcp.responseTimeout";
+    private static final String RESPONSE_TIMEOUT_VALUE = "2000";
+    private static final String TRANSPORT_CONNECTION_TIMEOUT = "sun.rmi.transport.connectionTimeout";
+    private static final String CONNECTION_TIMEOUT_VALUE = "2000";
+
+
+    private static final String JAVA_SECURITY_POLICY = "java.security.policy";
+    private static final String POLICY_FILE_PATH = "/resources/project.policy";
+
+    private static final String JAVA_RMI_SERVER_HOSTNAME_PROPERTY = "java.rmi.server.hostname";
+
+    private static final String REGISTRY_FILTER_PROPERTY = "sun.rmi.registry.registryFilter";
+    private static final String REGISTRY_FILTER_VALUE = "java.util.ArrayList;";
+
+    private static final String RMI_REGISTRY_PORT = "remotestore.port";
+    private static final String RMI_REGISTRY_BIND_NAME = "remotestore.bind.name";
 
     // Background pinger runs OFF the StreamThread.
     private static final ScheduledExecutorService pinger =
@@ -79,21 +94,21 @@ public class RemoteSiteStore implements NodeRMICollectionInterface {
 
     public static void main(String[] args) {
         try {
-            System.setProperty("sun.rmi.transport.tcp.responseTimeout", "2000");
-            System.setProperty("sun.rmi.transport.connectionTimeout", "2000");
-            System.setProperty("java.security.policy", String.valueOf(
-                    RemoteSiteStore.class.getResource("/resources/project.policy")));
-            System.setProperty("java.rmi.server.hostname", filePropertiesLocalStore.retrieveString("java.rmi.server.hostname"));
+            System.setProperty(TRANSPORT_RESPONSE_TIMEOUT, RESPONSE_TIMEOUT_VALUE);
+            System.setProperty(TRANSPORT_CONNECTION_TIMEOUT, CONNECTION_TIMEOUT_VALUE);
+            System.setProperty(JAVA_SECURITY_POLICY, String.valueOf(
+                    RemoteSiteStore.class.getResource(POLICY_FILE_PATH)));
+            System.setProperty(JAVA_RMI_SERVER_HOSTNAME_PROPERTY, filePropertiesLocalStore.retrieveString(JAVA_RMI_SERVER_HOSTNAME_PROPERTY));
             if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
             }
-            System.setProperty("sun.rmi.registry.registryFilter", "java.util.ArrayList;");
+            System.setProperty(REGISTRY_FILTER_PROPERTY, REGISTRY_FILTER_VALUE);
 
             final NodeRMICollectionInterface stub =
                     (NodeRMICollectionInterface) UnicastRemoteObject.exportObject(
-                            remoteNodeStore, filePropertiesLocalStore.retrieveInt("remotestore.port"));
-            final Registry registry = LocateRegistry.createRegistry(filePropertiesLocalStore.retrieveInt("remotestore.port"));
-            registry.bind(filePropertiesLocalStore.retrieveString("remotestore.bind.name"), stub);
+                            remoteNodeStore, filePropertiesLocalStore.retrieveInt(RMI_REGISTRY_PORT));
+            final Registry registry = LocateRegistry.createRegistry(filePropertiesLocalStore.retrieveInt(RMI_REGISTRY_PORT));
+            registry.bind(filePropertiesLocalStore.retrieveString(RMI_REGISTRY_BIND_NAME), stub);
             System.out.println("Server ready (background pinger, no inline RMI in getAll).");
         } catch (Exception e) {
             e.printStackTrace();

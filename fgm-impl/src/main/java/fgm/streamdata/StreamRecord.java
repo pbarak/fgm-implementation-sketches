@@ -15,5 +15,5 @@ import java.io.Serializable;
 })
 public interface StreamRecord extends Serializable {
     <T> T getKey(); // the stream record key
-    Long getTimeStamp();
+    long getTimeStamp();
 }

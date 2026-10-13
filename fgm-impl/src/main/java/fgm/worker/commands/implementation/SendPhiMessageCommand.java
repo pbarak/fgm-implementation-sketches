@@ -20,8 +20,7 @@ import fgm.worker.metrictypes.WorkerMetrics;
 
 public class SendPhiMessageCommand implements FgmCommand {
 
-    private int currentRound;
-    private int currentSubRound;
+    private PhiMessage phiMessage;
     private FgmNode<?> fgmNode;
     private long lastSentBytes;     // payload size of the most recent send, for logging
     private static final Logger logger = LoggerFactory.getLogger(SendPhiMessageCommand.class);
@@ -32,19 +31,27 @@ public class SendPhiMessageCommand implements FgmCommand {
 
     public SendPhiMessageCommand(FgmNode<?> fgmNode) {
         this.fgmNode = fgmNode;
-        this.currentRound = fgmNode.getCurrentRound();
-        this.currentSubRound = fgmNode.getCurrentSubRound();
+    }
+
+    /** Phase 1 — MUST run while holding fgmNode's fairLock. */
+    public void snapshotUnderLock() {
+        phiMessage = PhiMessage.getInstance();
+        phiMessage.setSiteId(this.fgmNode.getNodeId());
+        phiMessage.setCurrentRound(this.fgmNode.getCurrentRound());
+        phiMessage.setCurrentSubround(this.fgmNode.getCurrentSubRound());
+        phiMessage.setPhi(ComputePhiInvocationHelper.invokeComputePhi(this.fgmNode)); // needs lock-consistent Si/Ei/E
     }
 
     @Override
     public void execute() {
         try {
 
-            sendPhiMessage();
-
-            //sendPhiStatisticsMessage();
-
-            sendLogMessage();
+            this.lastSentBytes = SerializationUtil.bytesOf(phiMessage);
+            ProducerRecord<String, PhiMessage> record = new ProducerRecord<>(
+                    getBaseConfiguration().getPhiMessagesTopic(),
+                    getBaseConfiguration().getPhiMessagesTopicKey(), phiMessage);
+            getPhiMessageProducer().send(record);
+            fgmNode.logSentPhi(this.lastSentBytes);
 
         } catch (Exception ex) {
             logger.info(ex.getMessage());
@@ -54,8 +61,8 @@ public class SendPhiMessageCommand implements FgmCommand {
     private void sendPhiMessage() {
         PhiMessage phiMessage = PhiMessage.getInstance();
         phiMessage.setSiteId(this.fgmNode.getNodeId());
-        phiMessage.setCurrentRound(this.currentRound);
-        phiMessage.setCurrentSubround(this.currentSubRound);
+        ////phiMessage.setCurrentRound(this.currentRound);
+        ////phiMessage.setCurrentSubround(this.currentSubRound);
         logger.info("currently in SendPhiMessageCommand of {} requesting getDrift() at {}",
                 fgmNode.getNodeId(), DateTime.now().getMillis());
         LocalStatistic<? extends Vector> localDrift = this.fgmNode.getDrift();
@@ -95,10 +102,6 @@ public class SendPhiMessageCommand implements FgmCommand {
 
     private IMessageProducer<String, StatisticsMessage> getStatisticsProducer() {
         return this.fgmNode.getNodeInternalFgmState().getStatisticsMessageProducer();
-    }
-
-    private IMessageProducer<String, String> getLogsProducer() {
-        return this.fgmNode.getNodeInternalFgmState().getLogsProducer();
     }
 
     private IMessageProducer<String, PhiMessage> getPhiMessageProducer() {
